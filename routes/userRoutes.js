@@ -76,23 +76,29 @@ router.post('/', async (req, res) => {
 });
 
 // ==========================================
-// 3. GOOGLE AUTHENTICATION (Bulletproof)
+// 3. GOOGLE AUTHENTICATION (Bulletproof + Trim Fix)
 // @route POST /api/users/google
 // ==========================================
 router.post('/google', async (req, res) => {
   try {
     const { token } = req.body;
     
-    // 🛡️ Safety Check: Did we even receive a token from the frontend?
     if (!token) {
-      console.error("GOOGLE AUTH ERROR: No token received from frontend!");
-      return res.status(400).json({ message: "No token provided. Check express.json() middleware." });
+      console.error("❌ GOOGLE AUTH ERROR: No token received from frontend!");
+      return res.status(400).json({ message: "No token provided." });
     }
     
-    // Verify token with Google using the Failsafe Client ID
-    const ticket = await client.verifyIdToken({
+    // 🛠️ THE FIX: Forcefully remove any hidden spaces from Railway variables!
+    const rawClientId = process.env.GOOGLE_CLIENT_ID || '343076682784-f9g6kf31uhbdlfgh5vm5e1k0rgp7ef8k.apps.googleusercontent.com';
+    const SAFE_CLIENT_ID = rawClientId.trim(); 
+
+    // Initialize fresh with the cleaned ID
+    const googleClient = new OAuth2Client(SAFE_CLIENT_ID);
+
+    // Verify token with Google
+    const ticket = await googleClient.verifyIdToken({
       idToken: token,
-      audience: GOOGLE_CLIENT_ID,
+      audience: SAFE_CLIENT_ID,
     });
     
     const { name, email } = ticket.getPayload();
@@ -102,7 +108,7 @@ router.post('/google', async (req, res) => {
     
     if (user) {
       // User exists, log them in
-      res.json({
+      return res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -118,7 +124,7 @@ router.post('/google', async (req, res) => {
         password: randomPassword,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -127,9 +133,9 @@ router.post('/google', async (req, res) => {
       });
     }
   } catch (error) {
-    // 🛠️ Extreme logging: This prints the exact reason Google rejected the token to your Railway logs!
-    console.error('🔥 GOOGLE VERIFICATION FAILED:', error.message);
-    res.status(401).json({ message: `Google Verification Failed: ${error.message}` });
+    // 🛠️ This logs to the BOTTOM of your Railway logs
+    console.error('🔥 GOOGLE VERIFICATION FAILED. Reason:', error.message);
+    return res.status(401).json({ message: `Backend rejected token: ${error.message}` });
   }
 });
 
