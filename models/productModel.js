@@ -10,7 +10,17 @@ const productSchema = mongoose.Schema(
     },
     name: { type: String, required: true },
     description: { type: String, required: true },
-    price: { type: Number, required: true, default: 0 },
+    price: { type: Number, required: true, default: 0 },isCustomizable: {
+  type: Boolean,
+  required: true,
+  default: false, // Only true for the Blank T-Shirt and Polo
+},
+printPrice: {
+  type: Number,
+  required: true,
+  default: 0, // Admin can set this to $5 or $10 per uploaded design
+},
+
     countInStock: { type: Number, required: true, default: 0 },
 
     // --- NEW REHOVA FEATURES ---

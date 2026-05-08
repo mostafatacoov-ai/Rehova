@@ -1,10 +1,16 @@
 // backend/routes/userRoutes.js
 const express = require('express');
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel'); // <-- This fixes "User is not defined"
-
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const User = require('../models/userModel'); 
+
+// 🛠️ THE FAILSAFE: If Railway drops the env var, this hardcoded ID takes over automatically.
+// This prevents the dreaded 401 Unauthorized error.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '343076682784-f9g6kf31uhbdlfgh5vm5e1k0rgp7ef8k.apps.googleusercontent.com';
+
+// Initialize Google Auth with the guaranteed Client ID
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // --- HELPER FUNCTION: GENERATE TOKEN ---
 const generateToken = (id) => {
@@ -15,16 +21,14 @@ const generateToken = (id) => {
 
 // ==========================================
 // 1. STANDARD LOGIN (EMAIL & PASSWORD)
-// @route   POST /api/users/login
-// @access  Public
+// @route POST /api/users/login
 // ==========================================
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
 
-    // Assuming you have a matchPassword method in your userModel
+    // Assumes matchPassword exists on your userModel
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
@@ -42,26 +46,19 @@ router.post('/login', async (req, res) => {
 });
 
 // ==========================================
-// 2. STANDARD REGISTRATION (EMAIL & PASSWORD)
-// @route   POST /api/users
-// @access  Public
+// 2. STANDARD REGISTRATION
+// @route POST /api/users
 // ==========================================
 router.post('/', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
+    
     const userExists = await User.findOne({ email });
-
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({
-      name,
-      email,
-      password,
-    });
-
+    const user = await User.create({ name, email, password });
     if (user) {
       res.status(201).json({
         _id: user._id,
@@ -74,29 +71,35 @@ router.post('/', async (req, res) => {
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error during registration' });
+    res.status(500).json({ message: error.message });
   }
 });
 
 // ==========================================
-// 3. GOOGLE AUTHENTICATION
-// @route   POST /api/users/google
-// @access  Public
+// 3. GOOGLE AUTHENTICATION (Bulletproof)
+// @route POST /api/users/google
 // ==========================================
 router.post('/google', async (req, res) => {
   try {
     const { token } = req.body;
-
-    // Fetch user data from Google using axios
-    const { data } = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${token}` },
+    
+    // 🛡️ Safety Check: Did we even receive a token from the frontend?
+    if (!token) {
+      console.error("GOOGLE AUTH ERROR: No token received from frontend!");
+      return res.status(400).json({ message: "No token provided. Check express.json() middleware." });
+    }
+    
+    // Verify token with Google using the Failsafe Client ID
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: GOOGLE_CLIENT_ID,
     });
-
-    const { email, name } = data;
-
-    // Check if this user already exists in your database
+    
+    const { name, email } = ticket.getPayload();
+    
+    // Check if user exists
     let user = await User.findOne({ email });
-
+    
     if (user) {
       // User exists, log them in
       res.json({
@@ -104,33 +107,60 @@ router.post('/google', async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
-        token: generateToken(user._id), 
+        token: generateToken(user._id),
       });
     } else {
-      // User doesn't exist, create a new account
+      // User doesn't exist, register them automatically
       const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-      
       user = await User.create({
         name,
         email,
-        password: randomPassword, 
+        password: randomPassword,
       });
 
-      if (user) {
-        res.status(201).json({
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-          token: generateToken(user._id),
-        });
-      } else {
-        res.status(400).json({ message: 'Invalid user data' });
-      }
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        token: generateToken(user._id),
+      });
     }
   } catch (error) {
-    console.error("Google Auth Backend Error:", error.message); 
-    res.status(401).json({ message: error.message || 'Google Authentication Failed' });
+    // 🛠️ Extreme logging: This prints the exact reason Google rejected the token to your Railway logs!
+    console.error('🔥 GOOGLE VERIFICATION FAILED:', error.message);
+    res.status(401).json({ message: `Google Verification Failed: ${error.message}` });
+  }
+});
+
+// ==========================================
+// 4. GET ALL USERS (For Admin Dashboard)
+// @route GET /api/users
+// ==========================================
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ==========================================
+// 5. DELETE USER (For Admin Dashboard)
+// @route DELETE /api/users/:id
+// ==========================================
+router.delete('/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      await user.deleteOne();
+      res.json({ message: 'User removed completely.' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 

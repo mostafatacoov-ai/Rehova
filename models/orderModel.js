@@ -8,21 +8,27 @@ const orderSchema = mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    orderItems: [
-      {
-        name: { type: String, required: true },
-        qty: { type: Number, required: true },
-        image: { type: String, required: true }, // We will map cartImage to this
-        price: { type: Number, required: true },
-        selectedSize: { type: String }, // NEW: Save the size
-        selectedColor: { type: String }, // NEW: Save the color
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          required: true,
-          ref: 'Product',
-        },
-      },
-    ],
+   orderItems: [
+  {
+    name: { type: String, required: true },
+    qty: { type: Number, required: true },
+    image: { type: String, required: true },
+    price: { type: Number, required: true },
+    selectedSize: { type: String },
+    selectedColor: { type: String },
+    
+    // --- NEW CUSTOM DESIGN FIELDS ---
+    isCustomOrder: { type: Boolean, default: false },
+    uploadedDesigns: [{ type: String }], // Array of URLs to their PNGs
+    mockupImage: { type: String }, // A screenshot of their final design
+    
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'Product',
+    },
+  },
+],
     shippingAddress: {
       address: { type: String, required: true },
       city: { type: String, required: true },
