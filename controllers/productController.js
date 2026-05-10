@@ -42,8 +42,8 @@ const createProduct = async (req, res) => {
       discount: req.body.discount || 0,
       sizes: req.body.sizes || [],
       colors: req.body.colors || [],
-      photos: req.body.photos || [{ url: 'https://via.placeholder.com/300', isMain: true }]
-      product.model3d = req.body.model3d || product.model3d;
+      photos: req.body.photos || [{ url: 'https://via.placeholder.com/300', isMain: true }],
+      model3d: req.body.model3d
     });
 
     const createdProduct = await product.save();
