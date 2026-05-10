@@ -34,6 +34,7 @@ printPrice: {
     ],
     // Legacy fallback
     image: { type: String, required: false },
+    model3d: { type: String, default: '' },
 
     // Standard fields
     brand: { type: String, required: false, default: 'REHOVA' },
