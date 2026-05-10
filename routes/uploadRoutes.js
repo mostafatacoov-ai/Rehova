@@ -24,16 +24,24 @@ const storage = multer.diskStorage({
   },
 });
 
-// Filter to only accept images (Optional but good for security)
+// Filter to only accept images and 3D models (Security check)
 const checkFileType = (file, cb) => {
-  const filetypes = /jpg|jpeg|png|webp|avif/;
+  // 1. Added 'glb' and 'gltf' to the allowed extensions
+  const filetypes = /jpg|jpeg|png|webp|avif|glb|gltf/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  
+  // 2. Specifically allow 3D model MIME types (Backend security)
+  const is3DModel = 
+    file.mimetype === 'model/gltf-binary' || 
+    file.mimetype === 'model/gltf+json' || 
+    file.mimetype === 'application/octet-stream';
+
+  const mimetype = filetypes.test(file.mimetype) || is3DModel;
 
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb('Images Only!');
+    cb('Error: Only Images and 3D Models (.glb) are allowed!');
   }
 };
 
