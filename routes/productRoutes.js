@@ -45,7 +45,8 @@ router.post('/', async (req, res) => {
       countInStock: req.body.countInStock || 0,
       sizes: req.body.sizes || [],
       colors: req.body.colors || [],
-      photos: req.body.photos || []
+      photos: req.body.photos || [],
+      model3d: req.body.model3d || ''
     });
 
     const createdProduct = await product.save();
@@ -60,7 +61,7 @@ router.post('/', async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', async (req, res) => {
   try {
-    const { name, price, description, countInStock, sizes, colors, photos } = req.body;
+    const { name, price, description, countInStock, sizes, colors, photos, model3d } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -75,6 +76,10 @@ router.put('/:id', async (req, res) => {
       product.sizes = sizes || product.sizes;
       product.colors = colors || product.colors;
       product.photos = photos || product.photos;
+      
+      if (model3d !== undefined) {
+        product.model3d = model3d;
+      }
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);
