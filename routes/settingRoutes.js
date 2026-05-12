@@ -26,24 +26,28 @@ router.get('/', async (req, res) => {
 // @desc    Update global site settings (Admin Only)
 // @route   PUT /api/settings
 // @access  Private/Admin
+// @desc    Update global site settings (Admin Only)
+// @route   PUT /api/settings
+// @access  Private/Admin
 router.put('/', protect, admin, async (req, res) => {
   try {
     let settings = await Setting.findOne({});
-    
-    if (!settings) {
-      settings = new Setting();
-    }
+    if (!settings) settings = new Setting();
 
-    // Update the values with whatever the Admin Dashboard sent
     settings.announcementText = req.body.announcementText !== undefined ? req.body.announcementText : settings.announcementText;
     settings.announcementActive = req.body.announcementActive !== undefined ? req.body.announcementActive : settings.announcementActive;
     settings.primaryColor = req.body.primaryColor || settings.primaryColor;
     settings.backgroundColor = req.body.backgroundColor || settings.backgroundColor;
+    
+    // 🛑 NEW: Save the 3D Custom Lab data
+    if (req.body.printFee !== undefined) settings.printFee = req.body.printFee;
+    if (req.body.customProducts) settings.customProducts = req.body.customProducts;
 
     const updatedSettings = await settings.save();
     res.json(updatedSettings);
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error updating settings' });
   }
 });
