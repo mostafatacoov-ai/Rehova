@@ -226,6 +226,7 @@ router.put('/profile', protect, async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
+    console.error('🔥 PROFILE UPDATE ERROR:', error.message);
     res.status(500).json({ message: 'Server error updating profile' });
   }
 });
