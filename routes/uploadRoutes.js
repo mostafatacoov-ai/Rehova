@@ -59,7 +59,7 @@ router.post('/', upload.single('image'), (req, res) => {
   }
   
   // Format the path so it works nicely in the browser
-  const filePath = `/${req.file.path.replace(/\\/g, '/')}`;
+  const filePath = `/uploads/${req.file.filename}`;
   
   // Send the URL back to the React frontend
   res.send(filePath); 
