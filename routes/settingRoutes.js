@@ -39,9 +39,10 @@ router.put('/', protect, admin, async (req, res) => {
     settings.primaryColor = req.body.primaryColor || settings.primaryColor;
     settings.backgroundColor = req.body.backgroundColor || settings.backgroundColor;
     
-    // 🛑 NEW: Save the 3D Custom Lab data
+    // 🛑 NEW: Save the 3D Custom Lab data & Categories
     if (req.body.printFee !== undefined) settings.printFee = req.body.printFee;
     if (req.body.customProducts) settings.customProducts = req.body.customProducts;
+    if (req.body.categories) settings.categories = req.body.categories;
 
     const updatedSettings = await settings.save();
     res.json(updatedSettings);

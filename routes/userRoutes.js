@@ -38,8 +38,10 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        isDeliveryBoy: user.isDeliveryBoy,
         phone: user.phone,             // 👈 ADDED
         addresses: user.addresses,     // 👈 ADDED
+        favorites: user.favorites,     // 👈 ADDED
         points: user.points,           // 👈 ADDED
         token: generateToken(user._id),
       });
@@ -71,8 +73,10 @@ router.post('/', async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        isDeliveryBoy: user.isDeliveryBoy,
         phone: user.phone,             // 👈 ADDED
         addresses: user.addresses,     // 👈 ADDED
+        favorites: user.favorites,     // 👈 ADDED
         points: user.points,           // 👈 ADDED
         token: generateToken(user._id),
       });
@@ -117,8 +121,10 @@ router.post('/google', async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        isDeliveryBoy: user.isDeliveryBoy,
         phone: user.phone,             // 👈 ADDED
         addresses: user.addresses,     // 👈 ADDED
+        favorites: user.favorites,     // 👈 ADDED
         points: user.points,           // 👈 ADDED
         token: generateToken(user._id),
       });
@@ -135,8 +141,10 @@ router.post('/google', async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        isDeliveryBoy: user.isDeliveryBoy,
         phone: user.phone,             // 👈 ADDED
         addresses: user.addresses,     // 👈 ADDED
+        favorites: user.favorites,     // 👈 ADDED
         points: user.points,           // 👈 ADDED
         token: generateToken(user._id),
       });
@@ -160,8 +168,10 @@ router.get('/profile', protect, async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        isDeliveryBoy: user.isDeliveryBoy,
         phone: user.phone,
         addresses: user.addresses,
+        favorites: user.favorites,
         points: user.points,
       });
     } else {
@@ -205,8 +215,10 @@ router.put('/profile', protect, async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         isAdmin: updatedUser.isAdmin,
+        isDeliveryBoy: updatedUser.isDeliveryBoy,
         phone: updatedUser.phone,
         addresses: updatedUser.addresses,
+        favorites: updatedUser.favorites,
         points: updatedUser.points,
         token: generateToken(updatedUser._id), 
       });
@@ -219,6 +231,66 @@ router.put('/profile', protect, async (req, res) => {
 });
 
 // ==========================================
+// 5.5. NEW: TOGGLE FAVORITE (Private)
+// @route POST /api/users/favorites/toggle
+// ==========================================
+router.post('/favorites/toggle', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const productId = req.body.productId;
+    if (!productId) return res.status(400).json({ message: 'Product ID required' });
+
+    if (!user.favorites) {
+      user.favorites = [];
+    }
+
+    // Convert ObjectIds to string for comparison
+    const index = user.favorites.findIndex(fav => fav.toString() === productId.toString());
+    if (index > -1) {
+      // Remove it
+      user.favorites.splice(index, 1);
+    } else {
+      // Add it
+      user.favorites.push(productId);
+    }
+
+    const updatedUser = await user.save();
+    
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+      isDeliveryBoy: updatedUser.isDeliveryBoy,
+      phone: updatedUser.phone,
+      addresses: updatedUser.addresses,
+      favorites: updatedUser.favorites,
+      points: updatedUser.points,
+      token: generateToken(updatedUser._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error toggling favorite' });
+  }
+});
+
+// ==========================================
+// 5.6. NEW: GET FAVORITE PRODUCTS (Private)
+// @route GET /api/users/favorites
+// ==========================================
+router.get('/favorites', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('favorites');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json(user.favorites);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching favorites' });
+  }
+});
+
+// ==========================================
 // 6. GET ALL USERS (For Admin Dashboard)
 // @route GET /api/users
 // ==========================================
@@ -226,6 +298,19 @@ router.get('/', async (req, res) => {
   try {
     const users = await User.find({});
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ==========================================
+// 6.5. GET ALL DELIVERY BOYS (For Admin Dashboard)
+// @route GET /api/users/delivery-boys
+// ==========================================
+router.get('/delivery-boys', async (req, res) => {
+  try {
+    const deliveryBoys = await User.find({ isDeliveryBoy: true });
+    res.json(deliveryBoys);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

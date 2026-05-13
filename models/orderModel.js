@@ -52,6 +52,28 @@ const orderSchema = mongoose.Schema(
     paidAt: { type: Date },
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
+    
+    // --- ADVANCED DELIVERY TRACKING ---
+    deliveryBoy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    deliveryStatus: {
+      type: String,
+      enum: ['Processing', 'In Delivery', 'Delivered', 'Returned'],
+      default: 'Processing',
+    },
+    deliveryFee: {
+      type: Number,
+      default: 0,
+    },
+    deliveryComments: [
+      {
+        text: { type: String, required: true },
+        date: { type: Date, default: Date.now }
+      }
+    ]
   },
   {
     timestamps: true,

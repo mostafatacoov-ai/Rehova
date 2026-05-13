@@ -35,6 +35,11 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    isDeliveryBoy: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     
     // 👇 --- NEW ADVANCED FEATURES --- 👇
     phone: { 
@@ -47,6 +52,7 @@ const userSchema = mongoose.Schema(
       default: 0 // Every new user starts with 0 points
     },
     addresses: [addressSchema], // An array of the address structures we defined above!
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] // 👈 NEW
     // 👆 ---------------------------- 👆
   },
   {

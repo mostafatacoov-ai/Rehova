@@ -21,6 +21,7 @@ const settingSchema = mongoose.Schema(
     backgroundColor: { type: String, default: '#ffffff' },
     printFee: { type: Number, default: 150 },   // Extra cost for custom printing
     customProducts: [customProductSchema],      // 👈 The array holding your T-Shirts and Polos!
+    categories: [{ type: String }],             // 👈 Dynamic categories for products
   },
   { timestamps: true }
 );
