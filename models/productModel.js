@@ -36,6 +36,23 @@ printPrice: {
     image: { type: String, required: false },
     model3d: { type: String, default: '' },
 
+    // 🛑 NEW ACCORDION FIELDS
+    sizeChart: [
+      {
+        size: { type: String },
+        bodyWidth: { type: String },
+        bodyLength: { type: String }
+      }
+    ],
+    washingInstructions: { 
+      type: String, 
+      default: 'Machine wash in cold water 30 degrees inside out\nDo not bleach\nUse gentle detergent and avoid mixing colors' 
+    },
+    shippingDelivery: { 
+      type: String, 
+      default: 'Regular orders: 3-7 business days, depending on your location' 
+    },
+
     // Standard fields
     brand: { type: String, required: false, default: 'REHOVA' },
     category: { type: String, required: false },

@@ -43,6 +43,7 @@ router.put('/', protect, admin, async (req, res) => {
     if (req.body.printFee !== undefined) settings.printFee = req.body.printFee;
     if (req.body.customProducts) settings.customProducts = req.body.customProducts;
     if (req.body.categories) settings.categories = req.body.categories;
+    if (req.body.returnRefundPolicy !== undefined) settings.returnRefundPolicy = req.body.returnRefundPolicy;
 
     const updatedSettings = await settings.save();
     res.json(updatedSettings);

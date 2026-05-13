@@ -22,6 +22,10 @@ const settingSchema = mongoose.Schema(
     printFee: { type: Number, default: 150 },   // Extra cost for custom printing
     customProducts: [customProductSchema],      // 👈 The array holding your T-Shirts and Polos!
     categories: [{ type: String }],             // 👈 Dynamic categories for products
+    returnRefundPolicy: { 
+      type: String, 
+      default: 'We care about our customers and allow returns within 14 days of receipt\nItems must be unused and unwashed in original condition\nAll original tags must be attached' 
+    },
   },
   { timestamps: true }
 );
