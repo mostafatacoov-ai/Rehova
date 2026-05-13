@@ -11,6 +11,8 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const settingRoutes = require('./routes/settingRoutes'); // 🛑 NEW: Import Settings Routes
+const subscriberRoutes = require('./routes/subscriberRoutes');
+const promoCodeRoutes = require('./routes/promoCodeRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +40,8 @@ app.use('/api/upload', uploadRoutes); // Vital for the upload progress bar
 app.use('/api/users', userRoutes); // Where the Google Auth goes!
 app.use('/api/orders', orderRoutes);
 app.use('/api/settings', settingRoutes); // 🛑 NEW: Mount the Settings API!
+app.use('/api/subscribers', subscriberRoutes);
+app.use('/api/promo', promoCodeRoutes);
 
 // ==========================================
 // 📁 STATIC FOLDER SETUP

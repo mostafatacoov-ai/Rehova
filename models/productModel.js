@@ -58,6 +58,10 @@ printPrice: {
     category: { type: String, required: false },
     rating: { type: Number, required: true, default: 0 },
     numReviews: { type: Number, required: true, default: 0 },
+    
+    // --- SPECIAL OFFER RIBBON ---
+    hasSpecialOffer: { type: Boolean, default: false },
+    specialOfferText: { type: String, default: '' },
   },
   {
     timestamps: true,

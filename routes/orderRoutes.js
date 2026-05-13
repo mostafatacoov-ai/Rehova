@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/orderModel');
-const User = require('../models/userModel'); 
+const User = require('../models/userModel');
 const Product = require('../models/productModel'); // 🛑 NEEDED FOR INVENTORY
 const { protect } = require('../middleware/authMiddleware');
 
@@ -19,6 +19,8 @@ router.post('/', async (req, res) => {
       taxPrice,
       shippingPrice,
       totalPrice,
+      promoCode,
+      discountApplied,
       userInfo // Passed from frontend auth
     } = req.body;
 
@@ -34,9 +36,12 @@ router.post('/', async (req, res) => {
         shippingAddress,
         paymentMethod,
         itemsPrice,
+        itemsPrice,
         taxPrice,
         shippingPrice,
         totalPrice,
+        promoCode,
+        discountApplied,
       });
 
       const createdOrder = await order.save();
@@ -50,12 +55,12 @@ router.post('/', async (req, res) => {
         const user = await User.findById(userInfo._id);
         if (user) {
           user.points = (user.points || 0) + pointsEarned;
-          
+
           // Auto-save shipping address if it's new
           if (shippingAddress && shippingAddress.address) {
-            const isNewAddress = !user.addresses.some(a => 
-              a.street === shippingAddress.address && 
-              a.city === shippingAddress.city && 
+            const isNewAddress = !user.addresses.some(a =>
+              a.street === shippingAddress.address &&
+              a.city === shippingAddress.city &&
               a.zip === shippingAddress.postalCode &&
               a.country === shippingAddress.country
             );
@@ -75,7 +80,7 @@ router.post('/', async (req, res) => {
       // Send back the order AND the points earned!
       res.status(201).json({
         order: createdOrder,
-        pointsEarned: pointsEarned 
+        pointsEarned: pointsEarned
       });
     }
   } catch (error) {
@@ -121,7 +126,7 @@ router.put('/:id/delivery-admin', async (req, res) => {
     if (order) {
       if (deliveryBoyId !== undefined) order.deliveryBoy = deliveryBoyId;
       if (deliveryFee !== undefined) order.deliveryFee = deliveryFee;
-      
+
       // If changing to 'In Delivery', deduct inventory
       if (deliveryStatus && deliveryStatus === 'In Delivery' && order.deliveryStatus !== 'In Delivery') {
         for (const item of order.orderItems) {
@@ -132,7 +137,7 @@ router.put('/:id/delivery-admin', async (req, res) => {
           }
         }
       }
-      
+
       if (deliveryStatus !== undefined) order.deliveryStatus = deliveryStatus;
 
       const updatedOrder = await order.save();
@@ -156,7 +161,7 @@ router.put('/:id/delivery-status', protect, async (req, res) => {
     if (order) {
       // Must be the assigned delivery boy or admin
       if (order.deliveryBoy && order.deliveryBoy.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-         return res.status(401).json({ message: 'Not authorized for this order' });
+        return res.status(401).json({ message: 'Not authorized for this order' });
       }
 
       if (comment) {
@@ -165,14 +170,14 @@ router.put('/:id/delivery-status', protect, async (req, res) => {
 
       // Handle 'Returned' logic
       if (deliveryStatus === 'Returned' && order.deliveryStatus !== 'Returned') {
-         // Restore inventory
-         for (const item of order.orderItems) {
-           const product = await Product.findById(item.product);
-           if (product) {
-             product.countInStock = product.countInStock + item.qty;
-             await product.save();
-           }
-         }
+        // Restore inventory
+        for (const item of order.orderItems) {
+          const product = await Product.findById(item.product);
+          if (product) {
+            product.countInStock = product.countInStock + item.qty;
+            await product.save();
+          }
+        }
       }
 
       if (deliveryStatus === 'Delivered') {

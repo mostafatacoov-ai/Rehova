@@ -26,6 +26,11 @@ const settingSchema = mongoose.Schema(
       type: String, 
       default: 'We care about our customers and allow returns within 14 days of receipt\nItems must be unused and unwashed in original condition\nAll original tags must be attached' 
     },
+    // --- POPUP SETTINGS ---
+    popupActive: { type: Boolean, default: false },
+    popupTitle: { type: String, default: 'GET 10% OFF YOUR FIRST ORDER' },
+    popupText: { type: String, default: "300,000 CLIENTS HAVE TRIED US AND RETURNED FOR MORE. NOW IT'S YOUR TURN!" },
+    popupDiscount: { type: String, default: 'CLAIM DISCOUNT' },
   },
   { timestamps: true }
 );

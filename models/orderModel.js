@@ -53,6 +53,10 @@ const orderSchema = mongoose.Schema(
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
     
+    // --- NEW: PROMO CODE LOGGING ---
+    promoCode: { type: String, default: '' },
+    discountApplied: { type: Number, default: 0 },
+    
     // --- ADVANCED DELIVERY TRACKING ---
     deliveryBoy: {
       type: mongoose.Schema.Types.ObjectId,

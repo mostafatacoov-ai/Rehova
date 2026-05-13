@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', async (req, res) => {
   try {
-    const { name, price, description, countInStock, sizes, colors, photos, model3d, sizeChart, washingInstructions, shippingDelivery } = req.body;
+    const { name, price, description, countInStock, sizes, colors, photos, model3d, sizeChart, washingInstructions, shippingDelivery, hasSpecialOffer, specialOfferText } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -84,6 +84,9 @@ router.put('/:id', async (req, res) => {
       if (sizeChart !== undefined) product.sizeChart = sizeChart;
       if (washingInstructions !== undefined) product.washingInstructions = washingInstructions;
       if (shippingDelivery !== undefined) product.shippingDelivery = shippingDelivery;
+      
+      if (hasSpecialOffer !== undefined) product.hasSpecialOffer = hasSpecialOffer;
+      if (specialOfferText !== undefined) product.specialOfferText = specialOfferText;
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);

@@ -45,6 +45,12 @@ router.put('/', protect, admin, async (req, res) => {
     if (req.body.categories) settings.categories = req.body.categories;
     if (req.body.returnRefundPolicy !== undefined) settings.returnRefundPolicy = req.body.returnRefundPolicy;
 
+    // 🛑 NEW: Popup Settings
+    if (req.body.popupActive !== undefined) settings.popupActive = req.body.popupActive;
+    if (req.body.popupTitle !== undefined) settings.popupTitle = req.body.popupTitle;
+    if (req.body.popupText !== undefined) settings.popupText = req.body.popupText;
+    if (req.body.popupDiscount !== undefined) settings.popupDiscount = req.body.popupDiscount;
+
     const updatedSettings = await settings.save();
     res.json(updatedSettings);
 
