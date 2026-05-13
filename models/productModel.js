@@ -62,6 +62,7 @@ printPrice: {
     // --- SPECIAL OFFER RIBBON ---
     hasSpecialOffer: { type: Boolean, default: false },
     specialOfferText: { type: String, default: '' },
+    isHidden: { type: Boolean, default: false },
   },
   {
     timestamps: true,

@@ -16,7 +16,7 @@ if (!fs.existsSync(uploadDir)) {
 // --- MULTER CONFIGURATION ---
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, 'uploads/'); // Save files to the backend/uploads folder
+    cb(null, path.join(__dirname, '../uploads')); // Save files to the backend/uploads folder
   },
   filename(req, file, cb) {
     // Rename the file to ensure no two files ever have the exact same name

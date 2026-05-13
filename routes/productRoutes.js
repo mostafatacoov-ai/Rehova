@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', async (req, res) => {
   try {
-    const { name, price, description, countInStock, sizes, colors, photos, model3d, sizeChart, washingInstructions, shippingDelivery, hasSpecialOffer, specialOfferText } = req.body;
+    const { name, price, description, countInStock, sizes, colors, photos, model3d, sizeChart, washingInstructions, shippingDelivery, hasSpecialOffer, specialOfferText, isHidden } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -87,6 +87,7 @@ router.put('/:id', async (req, res) => {
       
       if (hasSpecialOffer !== undefined) product.hasSpecialOffer = hasSpecialOffer;
       if (specialOfferText !== undefined) product.specialOfferText = specialOfferText;
+      if (isHidden !== undefined) product.isHidden = isHidden;
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);
