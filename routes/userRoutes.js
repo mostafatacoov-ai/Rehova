@@ -236,27 +236,31 @@ router.put('/profile', protect, async (req, res) => {
 // ==========================================
 router.post('/favorites/toggle', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
     const productId = req.body.productId;
     if (!productId) return res.status(400).json({ message: 'Product ID required' });
 
-    if (!user.favorites) {
-      user.favorites = [];
-    }
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Convert ObjectIds to string for comparison
-    const index = user.favorites.findIndex(fav => fav.toString() === productId.toString());
-    if (index > -1) {
-      // Remove it
-      user.favorites.splice(index, 1);
+    // Check if already favorited
+    const alreadyFav = user.favorites && user.favorites.some(fav => fav.toString() === productId.toString());
+
+    let updatedUser;
+    if (alreadyFav) {
+      // Remove from favorites using $pull (bypasses pre-save hook)
+      updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { $pull: { favorites: productId } },
+        { new: true }
+      );
     } else {
-      // Add it
-      user.favorites.push(productId);
+      // Add to favorites using $addToSet (bypasses pre-save hook)
+      updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { $addToSet: { favorites: productId } },
+        { new: true }
+      );
     }
-
-    const updatedUser = await user.save();
     
     res.json({
       _id: updatedUser._id,
@@ -271,6 +275,7 @@ router.post('/favorites/toggle', protect, async (req, res) => {
       token: generateToken(updatedUser._id),
     });
   } catch (error) {
+    console.error('🔥 FAVORITES TOGGLE ERROR:', error.message);
     res.status(500).json({ message: 'Server error toggling favorite' });
   }
 });
