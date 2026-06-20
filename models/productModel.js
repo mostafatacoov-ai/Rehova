@@ -25,7 +25,13 @@ printPrice: {
 
     // --- NEW REHOVA FEATURES ---
     sizes: [{ type: String }],
-    colors: [{ type: String }], 
+    colors: [{ type: String }],
+    styles: [
+      {
+        name: { type: String },
+        colorCode: { type: String }
+      }
+    ],
     photos: [
       {
         url: { type: String, required: true },

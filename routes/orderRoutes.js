@@ -4,6 +4,7 @@ const router = express.Router();
 const Order = require('../models/orderModel');
 const User = require('../models/userModel');
 const Product = require('../models/productModel'); // 🛑 NEEDED FOR INVENTORY
+const GiftCard = require('../models/giftCardModel'); // 🛑 NEW: Gift Cards
 const { protect } = require('../middleware/authMiddleware');
 
 // @desc    Create new order & Award Loyalty Points
@@ -46,6 +47,51 @@ router.post('/', async (req, res) => {
 
       const createdOrder = await order.save();
 
+      // 🛑 NEW: GIFT CARD REDEMPTION
+      if (promoCode) {
+        const giftCard = await GiftCard.findOne({ code: promoCode.toUpperCase() });
+        if (giftCard) {
+          giftCard.currentBalance -= (discountApplied || 0);
+          if (giftCard.currentBalance <= 0) {
+            giftCard.currentBalance = 0;
+            giftCard.status = 'Used';
+          }
+          await giftCard.save();
+        }
+      }
+
+      // 🛑 NEW: GIFT CARD PURCHASING
+      let assignedGiftCards = [];
+      for (const item of orderItems) {
+        const productData = await Product.findById(item.product);
+        // We assume the admin sets the category to 'Gift Card' for these products
+        if (productData && productData.category === 'Gift Card') {
+          for (let i = 0; i < item.qty; i++) {
+            const availableCard = await GiftCard.findOne({ status: 'Available', initialValue: productData.price });
+            if (availableCard) {
+              availableCard.status = 'Purchased';
+              availableCard.purchasedBy = userInfo._id;
+              availableCard.purchasedAt = Date.now();
+              await availableCard.save();
+              assignedGiftCards.push(availableCard.code);
+            } else {
+              // Generate on the fly if ran out
+              const newCode = 'GC-' + require('crypto').randomBytes(4).toString('hex').toUpperCase();
+              const newCard = new GiftCard({
+                code: newCode,
+                initialValue: productData.price,
+                currentBalance: productData.price,
+                status: 'Purchased',
+                purchasedBy: userInfo._id,
+                purchasedAt: Date.now()
+              });
+              await newCard.save();
+              assignedGiftCards.push(newCard.code);
+            }
+          }
+        }
+      }
+
       // 🛑 NEW: LOYALTY POINTS REWARD SYSTEM 🛑
       // Calculate points: 1 point for every 10 EGP spent (e.g., 150 EGP = 15 points)
       const pointsEarned = Math.floor(Number(totalPrice) / 10);
@@ -80,7 +126,8 @@ router.post('/', async (req, res) => {
       // Send back the order AND the points earned!
       res.status(201).json({
         order: createdOrder,
-        pointsEarned: pointsEarned
+        pointsEarned: pointsEarned,
+        assignedGiftCards // Return the codes directly so they can be shown to the user on success
       });
     }
   } catch (error) {

@@ -17,6 +17,7 @@ const settingRoutes = require('./routes/settingRoutes'); // 🛑 NEW: Import Set
 const subscriberRoutes = require('./routes/subscriberRoutes');
 const promoCodeRoutes = require('./routes/promoCodeRoutes');
 const chatRoutes = require('./routes/chatRoutes'); // 🛑 NEW: Chat Routes
+const giftCardRoutes = require('./routes/giftCardRoutes'); // 🛑 NEW: Gift Card Routes
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +48,7 @@ app.use('/api/settings', settingRoutes); // 🛑 NEW: Mount the Settings API!
 app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/promo', promoCodeRoutes);
 app.use('/api/chat', chatRoutes); // 🛑 NEW: Mount Chat API
+app.use('/api/giftcards', giftCardRoutes); // 🛑 NEW: Mount Gift Card API
 
 // ==========================================
 // 📁 STATIC FOLDER SETUP
