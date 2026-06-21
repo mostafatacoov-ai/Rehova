@@ -79,6 +79,9 @@ const io = new Server(server, {
   }
 });
 
+// Attach io to the app so routes/controllers can use it
+app.set('io', io);
+
 // Socket.io connection logic
 io.on('connection', (socket) => {
   console.log('[SOCKET] New client connected:', socket.id);

@@ -123,6 +123,11 @@ router.post('/', async (req, res) => {
         }
       }
 
+      // 🛑 NEW: Emit Socket.io event for real-time dashboard notification
+      if (req.app.get('io')) {
+        req.app.get('io').emit('new_order', createdOrder);
+      }
+
       // Send back the order AND the points earned!
       res.status(201).json({
         order: createdOrder,
