@@ -31,6 +31,29 @@ const settingSchema = mongoose.Schema(
     popupTitle: { type: String, default: 'GET 10% OFF YOUR FIRST ORDER' },
     popupText: { type: String, default: "300,000 CLIENTS HAVE TRIED US AND RETURNED FOR MORE. NOW IT'S YOUR TURN!" },
     popupDiscount: { type: String, default: 'CLAIM DISCOUNT' },
+    
+    // --- SEO SETTINGS ---
+    seoTitle: { type: String, default: 'REHOVA | Premium Streetwear' },
+    seoDescription: { type: String, default: 'Premium streetwear brand blending comfort, style, and exclusivity.' },
+    seoKeywords: { type: String, default: 'streetwear, fashion, premium, clothing, rehova' },
+
+    // --- HOME PAGE CONTENT ---
+    heroVideo: { type: String, default: '/hero.mp4' },
+    heroButton1Text: { type: String, default: 'Shop Collection' },
+    heroButton1Link: { type: String, default: '/collection' },
+    heroButton2Text: { type: String, default: 'Customize Your Own' },
+    heroButton2Link: { type: String, default: '/custom-design' },
+    homePageHeading: { type: String, default: 'Latest Arrivals' },
+
+    // --- VISIBILITY TOGGLES ---
+    showCollection: { type: Boolean, default: true },
+    showCustomizer: { type: Boolean, default: true },
+    showGiftCards: { type: Boolean, default: true },
+    showBlogs: { type: Boolean, default: true },
+    showOurStory: { type: Boolean, default: true },
+
+    // --- TRANSLATIONS / WORDING ---
+    translations: { type: mongoose.Schema.Types.Mixed, default: {} }
   },
   { timestamps: true }
 );
